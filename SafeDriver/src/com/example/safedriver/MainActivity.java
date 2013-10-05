@@ -38,8 +38,8 @@ public class MainActivity extends Activity implements SensorEventListener {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        View v = this.findViewById(R.layout.orientation_sensor_example);
-        setContentView(v);
+        int i = R.layout.orientation_sensor_example;
+        setContentView(i);
         mSensorManager = (SensorManager) getApplicationContext().getSystemService(Context.SENSOR_SERVICE);
         mLinearAccelerationSensor = mSensorManager.getDefaultSensor(
     			Sensor.TYPE_LINEAR_ACCELERATION);
@@ -83,7 +83,8 @@ public class MainActivity extends Activity implements SensorEventListener {
         linearAccelerationPlot.getDomainLabelWidget().pack();
         linearAccelerationPlot.setRangeLabel("Acceleration (m/s^2)");
         linearAccelerationPlot.getRangeLabelWidget().pack();
-  
+		mSensorManager.registerListener(this, mRotationVectorSensor, 100000);
+		mSensorManager.registerListener(this, mLinearAccelerationSensor, 100000);
     }
 
 
@@ -100,14 +101,6 @@ public class MainActivity extends Activity implements SensorEventListener {
 		// to take appropriate action when the activity looses focus
 		super.onPause();
 
-	}
-
-
-	public void start() {
-		// enable our sensor when the activity is resumed, ask for
-		// 10 ms updates.
-		mSensorManager.registerListener(this, mRotationVectorSensor, 100000);
-		mSensorManager.registerListener(this, mLinearAccelerationSensor, 100000);
 	}
 
 	public void stop() {
