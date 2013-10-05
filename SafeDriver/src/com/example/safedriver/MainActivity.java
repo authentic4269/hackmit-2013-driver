@@ -3,15 +3,25 @@ package com.example.safedriver;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
+
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
+
 import android.app.Activity;
+import android.graphics.Color;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.opengl.GLSurfaceView;
 import android.os.Bundle;
+import android.app.Activity;
+import android.os.Bundle;
+import android.view.WindowManager;
+
+import com.androidplot.xy.*;
+
+import java.util.Arrays;
 
 /**
  * Wrapper activity demonstrating the use of the new
@@ -23,188 +33,167 @@ import android.os.Bundle;
  * @see SensorManager
  * 
  */
-public class MainActivity extends Activity {
-    private GLSurfaceView mGLSurfaceView;
-    private SensorManager mSensorManager;
-    private MyRenderer mRenderer;
+public class MainActivity extends Activity implements SensorEventListener {
+	private SensorManager mSensorManager;
+	private Sensor mRotationVectorSensor = mSensorManager.getDefaultSensor(
+			Sensor.TYPE_ROTATION_VECTOR);
+	private Sensor mLinearAccelerationSensor = mSensorManager.getDefaultSensor(
+			Sensor.TYPE_LINEAR_ACCELERATION);
+	private XYPlot angularSpeedPlot = null;
+	private XYPlot linearAccelerationPlot = null;
+	private SimpleXYSeries angularSpeedSeries = null;
+	private SimpleXYSeries linearAccelerationSeries = null;
+
+
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setContentView(R.layout.orientation_sensor_example);
+ 
+        // setup the APR Levels plot:
+        angularSpeedPlot = (XYPlot) findViewById(R.id.angularSpeedPlot);
+ 
+        angularSpeedSeries = new SimpleXYSeries("Angular Speed");
+        angularSpeedSeries.useImplicitXVals();
+        angularSpeedPlot.addSeries(angularSpeedSeries,
+                new BarFormatter(Color.argb(100, 0, 200, 0), Color.rgb(0, 80, 0)));
+        angularSpeedPlot.setDomainStepValue(3);
+        angularSpeedPlot.setTicksPerRangeLabel(3);
+ 
+        // per the android documentation, the minimum and maximum readings we can get from
+        // any of the orientation sensors is -180 and 359 respectively so we will fix our plot's
+        // boundaries to those values.  If we did not do this, the plot would auto-range which
+        // can be visually confusing in the case of dynamic plots.
+        angularSpeedPlot.setRangeBoundaries(-180, 359, BoundaryMode.FIXED);
+ 
+        // use our custom domain value formatter:
+        angularSpeedPlot.setDomainValueFormat(new APRIndexFormat());
+ 
+        // update our domain and range axis labels:
+        angularSpeedPlot.setDomainLabel("Axis");
+        angularSpeedPlot.getDomainLabelWidget().pack();
+        angularSpeedPlot.setRangeLabel("Angle (Degs)");
+        angularSpeedPlot.getRangeLabelWidget().pack();
+        angularSpeedPlot.setGridPadding(15, 0, 15, 0);
+ 
+        // setup the APR History plot:
+        linearAccelerationPlot = (XYPlot) findViewById(R.id.linearAccelerationPlot);
+ 
+        linearAccelerationSeries = new SimpleXYSeries("Linear Acceleration");
+        linearAccelerationSeries.useImplicitXVals();
 
-        // Get an instance of the SensorManager
-        mSensorManager = (SensorManager)getSystemService(SENSOR_SERVICE);
-
-        // Create our Preview view and set it as the content of our
-        // Activity
-        mRenderer = new MyRenderer();
-        mGLSurfaceView = new GLSurfaceView(this);
-        mGLSurfaceView.setRenderer(mRenderer);
-        setContentView(mGLSurfaceView);
-    }
-
-    @Override
-    protected void onResume() {
-        // Ideally a game should implement onResume() and onPause()
-        // to take appropriate action when the activity looses focus
-        super.onResume();
-        mRenderer.start();
-        mGLSurfaceView.onResume();
-    }
-
-    @Override
-    protected void onPause() {
-        // Ideally a game should implement onResume() and onPause()
-        // to take appropriate action when the activity looses focus
-        super.onPause();
-        mRenderer.stop();
-        mGLSurfaceView.onPause();
-    }
-
-
-    class MyRenderer implements GLSurfaceView.Renderer, SensorEventListener {
-        private Cube mCube;
-        private Sensor mRotationVectorSensor;
-        private Sensor mLinearAccelerationSensor;
-        private final float[] mRotationMatrix = new float[16];
-
-        public MyRenderer() {
-            // find the rotation-vector sensor
-            mRotationVectorSensor = mSensorManager.getDefaultSensor(
-                    Sensor.TYPE_ROTATION_VECTOR);
-            mLinearAccelerationSensor = mSensorManager.getDefaultSensor(
-            		Sensor.TYPE_LINEAR_ACCELERATION);
-
-            mCube = new Cube();
-            // initialize the rotation matrix to identity
-            mRotationMatrix[ 0] = 1;
-            mRotationMatrix[ 4] = 1;
-            mRotationMatrix[ 8] = 1;
-            mRotationMatrix[12] = 1;
-        }
-
-        public void start() {
-            // enable our sensor when the activity is resumed, ask for
-            // 10 ms updates.
-            mSensorManager.registerListener(this, mRotationVectorSensor, 10000);
-            mSensorManager.registerListener(this, mLinearAccelerationSensor, 10000);
-        }
-
-        public void stop() {
-            // make sure to turn our sensor off when the activity is paused
-            mSensorManager.unregisterListener(this);
-        }
-
-        public void onSensorChanged(SensorEvent event) {
-            // we received a sensor event. it is a good practice to check
-            // that we received the proper event
-            if (event.sensor.getType() == Sensor.TYPE_ROTATION_VECTOR) {
-                // convert the rotation-vector to a 4x4 matrix. the matrix
-                // is interpreted by Open GL as the inverse of the
-                // rotation-vector, which is what we want.
-            	event.values[0] = 0;
-            	event.values[1] = 0;
-                //SensorManager.getRotationMatrixFromVector(
-                       // mRotationMatrix , event.values);
+        linearAccelerationPlot.setRangeBoundaries(-180, 359, BoundaryMode.FIXED);
+        linearAccelerationPlot.setDomainBoundaries(0, 30, BoundaryMode.FIXED);
+        linearAccelerationPlot.addSeries(linearAccelerationSeries, new LineAndPointFormatter(Color.rgb(100, 100, 200), Color.BLACK, null));
+        linearAccelerationPlot.setDomainStepValue(5);
+        linearAccelerationPlot.setTicksPerRangeLabel(3);
+        linearAccelerationPlot.setDomainLabel("Sample Index");
+        linearAccelerationPlot.getDomainLabelWidget().pack();
+        linearAccelerationPlot.setRangeLabel("Angle (Degs)");
+        linearAccelerationPlot.getRangeLabelWidget().pack();
+ 
+        // setup checkboxes:
+        hwAcceleratedCb = (CheckBox) findViewById(R.id.hwAccelerationCb);
+        final PlotStatistics levelStats = new PlotStatistics(1000, false);
+        final PlotStatistics histStats = new PlotStatistics(1000, false);
+ 
+        aprLevelsPlot.addListener(levelStats);
+        aprHistoryPlot.addListener(histStats);
+        hwAcceleratedCb.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                if(b) {
+                    aprLevelsPlot.setLayerType(View.LAYER_TYPE_NONE, null);
+                    aprHistoryPlot.setLayerType(View.LAYER_TYPE_NONE, null);
+                } else {
+                    aprLevelsPlot.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
+                    aprHistoryPlot.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
+                }
             }
-            if (event.sensor.getType() == Sensor.TYPE_LINEAR_ACCELERATION) {
-            	SensorManager.getRotationMatrixFromVector(
-                        mRotationMatrix , event.values);
+        });
+ 
+        showFpsCb = (CheckBox) findViewById(R.id.showFpsCb);
+        showFpsCb.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                levelStats.setAnnotatePlotEnabled(b);
+                histStats.setAnnotatePlotEnabled(b);
+            }
+        });
+ 
+        // get a ref to the BarRenderer so we can make some changes to it:
+        BarRenderer barRenderer = (BarRenderer) aprLevelsPlot.getRenderer(BarRenderer.class);
+        if(barRenderer != null) {
+            // make our bars a little thicker than the default so they can be seen better:
+            barRenderer.setBarWidth(25);
+        }
+ 
+        // register for orientation sensor events:
+        sensorMgr = (SensorManager) getApplicationContext().getSystemService(Context.SENSOR_SERVICE);
+        for (Sensor sensor : sensorMgr.getSensorList(Sensor.TYPE_ORIENTATION)) {
+            if (sensor.getType() == Sensor.TYPE_ORIENTATION) {
+                orSensor = sensor;
             }
         }
-
-        public void onDrawFrame(GL10 gl) {
-            // clear screen
-            gl.glClear(GL10.GL_COLOR_BUFFER_BIT);
-
-            // set-up modelview matrix
-            gl.glMatrixMode(GL10.GL_MODELVIEW);
-            gl.glLoadIdentity();
-            gl.glTranslatef(0, 0, -3.0f);
-            gl.glMultMatrixf(mRotationMatrix, 0);
-
-            // draw our object
-            gl.glEnableClientState(GL10.GL_VERTEX_ARRAY);
-            gl.glEnableClientState(GL10.GL_COLOR_ARRAY);
-
-            mCube.draw(gl);
+ 
+        // if we can't access the orientation sensor then exit:
+        if (orSensor == null) {
+            System.out.println("Failed to attach to orSensor.");
+            cleanup();
         }
-
-        public void onSurfaceChanged(GL10 gl, int width, int height) {
-            // set view-port
-            gl.glViewport(0, 0, width, height);
-            // set projection matrix
-            float ratio = (float) width / height;
-            gl.glMatrixMode(GL10.GL_PROJECTION);
-            gl.glLoadIdentity();
-            gl.glFrustumf(-ratio, ratio, -1, 1, 1, 10);
-        }
-
-        public void onSurfaceCreated(GL10 gl, EGLConfig config) {
-            // dither is enabled by default, we don't need it
-            gl.glDisable(GL10.GL_DITHER);
-            // clear screen in white
-            gl.glClearColor(1,1,1,1);
-        }
-
-        class Cube {
-            // initialize our cube
-            private FloatBuffer mVertexBuffer;
-            private FloatBuffer mColorBuffer;
-            private ByteBuffer  mIndexBuffer;
-
-            public Cube() {
-                final float vertices[] = {
-                        -1, -1, -1,              1, -1, -1,
-                         1,  1, -1,         -1,  1, -1,
-                        -1, -1,  1,      1, -1,  1,
-                         1,  1,  1,     -1,  1,  1,
-                };
-
-                final float colors[] = {
-                        0,  0,  0,  1,  1,  0,  0,  1,
-                        1,  1,  0,  1,  0,  1,  0,  1,
-                        0,  0,  1,  1,  1,  0,  1,  1,
-                        1,  1,  1,  1,  0,  1,  1,  1,
-                };
-
-                final byte indices[] = {
-                        0, 4, 5,    0, 5, 1,
-                        1, 5, 6,    1, 6, 2,
-                        2, 6, 7,    2, 7, 3,
-                        3, 7, 4,    3, 4, 0,
-                        4, 7, 6,    4, 6, 5,
-                        3, 0, 1,    3, 1, 2
-                };
-
-                ByteBuffer vbb = ByteBuffer.allocateDirect(vertices.length*4);
-                vbb.order(ByteOrder.nativeOrder());
-                mVertexBuffer = vbb.asFloatBuffer();
-                mVertexBuffer.put(vertices);
-                mVertexBuffer.position(0);
-
-                ByteBuffer cbb = ByteBuffer.allocateDirect(colors.length*4);
-                cbb.order(ByteOrder.nativeOrder());
-                mColorBuffer = cbb.asFloatBuffer();
-                mColorBuffer.put(colors);
-                mColorBuffer.position(0);
-
-                mIndexBuffer = ByteBuffer.allocateDirect(indices.length);
-                mIndexBuffer.put(indices);
-                mIndexBuffer.position(0);
-            }
-
-            public void draw(GL10 gl) {
-                gl.glEnable(GL10.GL_CULL_FACE);
-                gl.glFrontFace(GL10.GL_CW);
-                gl.glShadeModel(GL10.GL_SMOOTH);
-                gl.glVertexPointer(3, GL10.GL_FLOAT, 0, mVertexBuffer);
-                gl.glColorPointer(4, GL10.GL_FLOAT, 0, mColorBuffer);
-                gl.glDrawElements(GL10.GL_TRIANGLES, 36, GL10.GL_UNSIGNED_BYTE, mIndexBuffer);
-            }            
-        }
-
-        public void onAccuracyChanged(Sensor sensor, int accuracy) {
-        }
+ 
+        sensorMgr.registerListener(this, orSensor, SensorManager.SENSOR_DELAY_UI);
+ 
     }
+
+
+	@Override
+	protected void onResume() {
+		// Ideally a game should implement onResume() and onPause()
+		// to take appropriate action when the activity looses focus
+		super.onResume();
+	}
+
+	@Override
+	protected void onPause() {
+		// Ideally a game should implement onResume() and onPause()
+		// to take appropriate action when the activity looses focus
+		super.onPause();
+
+	}
+
+
+	public void start() {
+		// enable our sensor when the activity is resumed, ask for
+		// 10 ms updates.
+		mSensorManager.registerListener(this, mRotationVectorSensor, 10000);
+		mSensorManager.registerListener(this, mLinearAccelerationSensor, 10000);
+	}
+
+	public void stop() {
+		// make sure to turn our sensor off when the activity is paused
+		mSensorManager.unregisterListener(this);
+	}
+
+	public void onSensorChanged(SensorEvent event) {
+		// we received a sensor event. it is a good practice to check
+		// that we received the proper event
+		if (event.sensor.getType() == Sensor.TYPE_ROTATION_VECTOR) {
+			// convert the rotation-vector to a 4x4 matrix. the matrix
+			// is interpreted by Open GL as the inverse of the
+			// rotation-vector, which is what we want.
+			event.values[0] = 0;
+			event.values[1] = 0;
+			//SensorManager.getRotationMatrixFromVector(
+			// mRotationMatrix , event.values);
+		}
+		if (event.sensor.getType() == Sensor.TYPE_LINEAR_ACCELERATION) {
+
+		}
+	}
+
+
+	public void onAccuracyChanged(Sensor sensor, int accuracy) {
+	}
 }
