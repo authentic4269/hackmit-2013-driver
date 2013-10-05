@@ -1,27 +1,16 @@
 package com.example.safedriver;
 
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.nio.FloatBuffer;
-
-import javax.microedition.khronos.egl.EGLConfig;
-import javax.microedition.khronos.opengles.GL10;
-
 import android.app.Activity;
-import android.graphics.Color;
+import android.content.Context;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
-import android.opengl.GLSurfaceView;
 import android.os.Bundle;
-import android.app.Activity;
-import android.os.Bundle;
-import android.view.WindowManager;
+import android.view.View;
 
 import com.androidplot.xy.*;
 
-import java.util.Arrays;
 
 /**
  * Wrapper activity demonstrating the use of the new
@@ -35,29 +24,35 @@ import java.util.Arrays;
  */
 public class MainActivity extends Activity implements SensorEventListener {
 	private SensorManager mSensorManager;
-	private Sensor mRotationVectorSensor = mSensorManager.getDefaultSensor(
-			Sensor.TYPE_ROTATION_VECTOR);
-	private Sensor mLinearAccelerationSensor = mSensorManager.getDefaultSensor(
-			Sensor.TYPE_LINEAR_ACCELERATION);
+	private Sensor mRotationVectorSensor;
+	private Sensor mLinearAccelerationSensor;
 	private XYPlot angularSpeedPlot = null;
 	private XYPlot linearAccelerationPlot = null;
 	private SimpleXYSeries angularSpeedSeries = null;
 	private SimpleXYSeries linearAccelerationSeries = null;
+	private int HISTORY_SIZE = 30;
+	private long START = System.currentTimeMillis();
 
 
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.orientation_sensor_example);
+        View v = this.findViewById(R.layout.orientation_sensor_example);
+        setContentView(v);
+        mSensorManager = (SensorManager) getApplicationContext().getSystemService(Context.SENSOR_SERVICE);
+        mLinearAccelerationSensor = mSensorManager.getDefaultSensor(
+    			Sensor.TYPE_LINEAR_ACCELERATION);
+        mLinearAccelerationSensor = mSensorManager.getDefaultSensor(
+    			Sensor.TYPE_LINEAR_ACCELERATION);
+        
  
         // setup the APR Levels plot:
         angularSpeedPlot = (XYPlot) findViewById(R.id.angularSpeedPlot);
  
         angularSpeedSeries = new SimpleXYSeries("Angular Speed");
-        angularSpeedSeries.useImplicitXVals();
         angularSpeedPlot.addSeries(angularSpeedSeries,
-                new BarFormatter(Color.argb(100, 0, 200, 0), Color.rgb(0, 80, 0)));
+                new LineAndPointFormatter());
         angularSpeedPlot.setDomainStepValue(3);
         angularSpeedPlot.setTicksPerRangeLabel(3);
  
@@ -67,11 +62,8 @@ public class MainActivity extends Activity implements SensorEventListener {
         // can be visually confusing in the case of dynamic plots.
         angularSpeedPlot.setRangeBoundaries(-180, 359, BoundaryMode.FIXED);
  
-        // use our custom domain value formatter:
-        angularSpeedPlot.setDomainValueFormat(new APRIndexFormat());
- 
         // update our domain and range axis labels:
-        angularSpeedPlot.setDomainLabel("Axis");
+        angularSpeedPlot.setDomainLabel("Time");
         angularSpeedPlot.getDomainLabelWidget().pack();
         angularSpeedPlot.setRangeLabel("Angle (Degs)");
         angularSpeedPlot.getRangeLabelWidget().pack();
@@ -81,70 +73,17 @@ public class MainActivity extends Activity implements SensorEventListener {
         linearAccelerationPlot = (XYPlot) findViewById(R.id.linearAccelerationPlot);
  
         linearAccelerationSeries = new SimpleXYSeries("Linear Acceleration");
-        linearAccelerationSeries.useImplicitXVals();
 
         linearAccelerationPlot.setRangeBoundaries(-180, 359, BoundaryMode.FIXED);
         linearAccelerationPlot.setDomainBoundaries(0, 30, BoundaryMode.FIXED);
-        linearAccelerationPlot.addSeries(linearAccelerationSeries, new LineAndPointFormatter(Color.rgb(100, 100, 200), Color.BLACK, null));
+        linearAccelerationPlot.addSeries(linearAccelerationSeries, new LineAndPointFormatter());
         linearAccelerationPlot.setDomainStepValue(5);
         linearAccelerationPlot.setTicksPerRangeLabel(3);
-        linearAccelerationPlot.setDomainLabel("Sample Index");
+        linearAccelerationPlot.setDomainLabel("Time");
         linearAccelerationPlot.getDomainLabelWidget().pack();
-        linearAccelerationPlot.setRangeLabel("Angle (Degs)");
+        linearAccelerationPlot.setRangeLabel("Acceleration (m/s^2)");
         linearAccelerationPlot.getRangeLabelWidget().pack();
- 
-        // setup checkboxes:
-        hwAcceleratedCb = (CheckBox) findViewById(R.id.hwAccelerationCb);
-        final PlotStatistics levelStats = new PlotStatistics(1000, false);
-        final PlotStatistics histStats = new PlotStatistics(1000, false);
- 
-        aprLevelsPlot.addListener(levelStats);
-        aprHistoryPlot.addListener(histStats);
-        hwAcceleratedCb.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
-                if(b) {
-                    aprLevelsPlot.setLayerType(View.LAYER_TYPE_NONE, null);
-                    aprHistoryPlot.setLayerType(View.LAYER_TYPE_NONE, null);
-                } else {
-                    aprLevelsPlot.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
-                    aprHistoryPlot.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
-                }
-            }
-        });
- 
-        showFpsCb = (CheckBox) findViewById(R.id.showFpsCb);
-        showFpsCb.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
-                levelStats.setAnnotatePlotEnabled(b);
-                histStats.setAnnotatePlotEnabled(b);
-            }
-        });
- 
-        // get a ref to the BarRenderer so we can make some changes to it:
-        BarRenderer barRenderer = (BarRenderer) aprLevelsPlot.getRenderer(BarRenderer.class);
-        if(barRenderer != null) {
-            // make our bars a little thicker than the default so they can be seen better:
-            barRenderer.setBarWidth(25);
-        }
- 
-        // register for orientation sensor events:
-        sensorMgr = (SensorManager) getApplicationContext().getSystemService(Context.SENSOR_SERVICE);
-        for (Sensor sensor : sensorMgr.getSensorList(Sensor.TYPE_ORIENTATION)) {
-            if (sensor.getType() == Sensor.TYPE_ORIENTATION) {
-                orSensor = sensor;
-            }
-        }
- 
-        // if we can't access the orientation sensor then exit:
-        if (orSensor == null) {
-            System.out.println("Failed to attach to orSensor.");
-            cleanup();
-        }
- 
-        sensorMgr.registerListener(this, orSensor, SensorManager.SENSOR_DELAY_UI);
- 
+  
     }
 
 
@@ -167,8 +106,8 @@ public class MainActivity extends Activity implements SensorEventListener {
 	public void start() {
 		// enable our sensor when the activity is resumed, ask for
 		// 10 ms updates.
-		mSensorManager.registerListener(this, mRotationVectorSensor, 10000);
-		mSensorManager.registerListener(this, mLinearAccelerationSensor, 10000);
+		mSensorManager.registerListener(this, mRotationVectorSensor, 100000);
+		mSensorManager.registerListener(this, mLinearAccelerationSensor, 100000);
 	}
 
 	public void stop() {
@@ -183,13 +122,18 @@ public class MainActivity extends Activity implements SensorEventListener {
 			// convert the rotation-vector to a 4x4 matrix. the matrix
 			// is interpreted by Open GL as the inverse of the
 			// rotation-vector, which is what we want.
-			event.values[0] = 0;
-			event.values[1] = 0;
-			//SensorManager.getRotationMatrixFromVector(
-			// mRotationMatrix , event.values);
+			if (angularSpeedSeries.size() > HISTORY_SIZE) {
+				angularSpeedSeries.removeFirst();
+			}
+			angularSpeedSeries.addLast(System.currentTimeMillis() - START, event.values[2]);
+			angularSpeedPlot.redraw();
 		}
 		if (event.sensor.getType() == Sensor.TYPE_LINEAR_ACCELERATION) {
-
+			if (linearAccelerationSeries.size() > HISTORY_SIZE) {
+				linearAccelerationSeries.removeFirst();
+			}
+			linearAccelerationSeries.addLast(System.currentTimeMillis() - START, event.values[2]);
+			linearAccelerationPlot.redraw();
 		}
 	}
 
