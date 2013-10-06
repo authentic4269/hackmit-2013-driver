@@ -1,4 +1,4 @@
-package com.example.safedriver;
+package com.app.drivesafe;
 
 import android.app.Activity;
 import android.content.Context;
@@ -10,6 +10,7 @@ import android.os.Bundle;
 import android.view.View;
 
 import com.androidplot.xy.*;
+import com.example.safedriver.R;
 
 
 /**

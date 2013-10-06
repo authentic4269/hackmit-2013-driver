@@ -2,7 +2,7 @@
 // http://botbook.com/appa.html
 // I made minor edits
 
-package com.example.safedriver;
+package com.app.drivesafe;
 
 import java.io.BufferedInputStream;
 import java.io.IOException;

@@ -1,4 +1,4 @@
-package com.example.safedriver;
+package com.app.drivesafe;
 
 import java.util.Observable;
 import java.util.Observer;

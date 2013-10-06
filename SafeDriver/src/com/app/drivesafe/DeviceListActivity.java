@@ -1,4 +1,4 @@
-package com.example.safedriver;
+package com.app.drivesafe;
 
 /*
  * Copyright (C) 2009 The Android Open Source Project
@@ -17,6 +17,8 @@ package com.example.safedriver;
  */
 
 import java.util.Set;
+
+import com.example.safedriver.R;
 
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;

@@ -1,4 +1,4 @@
-package com.example.safedriver;
+package com.app.drivesafe;
 
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
