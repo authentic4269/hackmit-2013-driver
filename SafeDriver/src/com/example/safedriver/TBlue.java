@@ -15,6 +15,8 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.util.Log;
 
+import java.nio.ByteBuffer;
+
 public class TBlue { 
 	String address = null; 
 	String TAG = "tBlue";
@@ -110,23 +112,40 @@ public class TBlue {
 	public boolean streaming() {
 		return ( (inStream != null) && (outStream != null) );
 	}
-
-	public String read() {
-		if (!streaming()) return "";
-		String inStr = "";
+	
+	public int read() {
+		if (!streaming()) return 0;
+		int inInt = 0;
 		try {
 			if (0 < inStream.available()) {
-				byte[] inBuffer = new byte[1024];
-				int bytesRead = inStream.read(inBuffer);
-				inStr = new String(inBuffer, "ASCII");
-				inStr = inStr.substring(0, bytesRead);
-				Log.i(TAG, "byteCount: " + bytesRead + ", inStr: " + inStr);
+				byte[] inBuffer = new byte[4];
+				inStream.read(inBuffer);
+				ByteBuffer wrapped = ByteBuffer.wrap(inBuffer);
+				inInt = wrapped.getInt();
+				Log.i(TAG, "inInt: " + inInt);
 			}
 		} catch (IOException e) {
 			Log.e(TAG, "Read failed", e); 
 		}
-		return inStr;
+		return inInt;
 	}
+
+//	public String read() {
+//		if (!streaming()) return "";
+//		String inStr = "";
+//		try {
+//			if (0 < inStream.available()) {
+//				byte[] inBuffer = new byte[1024];
+//				int bytesRead = inStream.read(inBuffer);
+//				inStr = new String(inBuffer, "ASCII");
+//				inStr = inStr.substring(0, bytesRead);
+//				Log.i(TAG, "byteCount: " + bytesRead + ", inStr: " + inStr);
+//			}
+//		} catch (IOException e) {
+//			Log.e(TAG, "Read failed", e); 
+//		}
+//		return inStr;
+//	}
 
 	public void close() {
 		Log.i(TAG, "Bluetooth closing... ");

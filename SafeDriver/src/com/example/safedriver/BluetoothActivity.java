@@ -70,17 +70,15 @@ public class BluetoothActivity extends Activity {
 		
 		int i = 0;
 		while(tBlue.streaming() && i < 100) {
-			outputTv.append(tBlue.read());
+			outputTv.append(Integer.toString(tBlue.read()));
 			i ++;
 		}
 		
-		/*
-		String s = "";
-		while (tBlue.streaming() && (s.length() < 10) ) {
-			s += tBlue.read();
-		}
-		messagesTv.append("Read from Bluetooth: \n"+s);
-		*/
+//		String s = "";
+//		while (tBlue.streaming() && (s.length() < 10) ) {
+//			s += tBlue.read();
+//		}
+//		messagesTv.append("Read from Bluetooth: \n"+s);
 	}
 	
 	public void onActivityResult(int requestCode, int resultCode, Intent data) {
