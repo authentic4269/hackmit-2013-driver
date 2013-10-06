@@ -20,10 +20,6 @@
         <activity
             android:name="com.example.safedriver.MainActivity"
             android:label="@string/app_name" >
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
         </activity>
         <activity
             android:name="com.example.safedriver.BluetoothActivity"
@@ -33,6 +29,9 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity android:name=".DeviceListActivity"
+                  android:label="@string/select_device"
+                  android:configChanges="orientation|keyboardHidden" />
     </application>
 
 </manifest>

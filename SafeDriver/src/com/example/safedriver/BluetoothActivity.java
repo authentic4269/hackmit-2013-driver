@@ -54,7 +54,7 @@ public class BluetoothActivity extends Activity {
 	}
 
 	public void initGUI() {
-		LinearLayout container=new LinearLayout(this);
+		LinearLayout container = new LinearLayout(this);
 		messagesTv = new TextView(this);
 		container.addView(messagesTv);
 		setContentView(container);
