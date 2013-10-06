@@ -4,6 +4,7 @@
 
 package com.example.safedriver;
 
+import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -15,8 +16,6 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.util.Log;
 
-import java.nio.ByteBuffer;
-
 public class TBlue { 
 	String address = null; 
 	String TAG = "tBlue";
@@ -24,7 +23,7 @@ public class TBlue {
 	BluetoothDevice remoteDevice = null;
 	BluetoothSocket socket = null;
 	public OutputStream outStream = null;
-	public InputStream inStream = null;
+	public BufferedInputStream inStream = null;
 	boolean failed = false;
 
 	public TBlue(String address) {
@@ -90,7 +89,7 @@ public class TBlue {
 		try {
 			outStream = socket.getOutputStream(); 
 			Log.i(TAG, "Output stream open.");
-			inStream = socket.getInputStream();
+			inStream = new BufferedInputStream(socket.getInputStream());
 			Log.i(TAG, "Input stream open.");
 		} catch (IOException e) {
 			Log.e(TAG, "Failed to create output stream.", e);  
@@ -112,40 +111,23 @@ public class TBlue {
 	public boolean streaming() {
 		return ( (inStream != null) && (outStream != null) );
 	}
-	
-	public int read() {
-		if (!streaming()) return 0;
-		int inInt = 0;
+
+	public String read() {
+		if (!streaming()) return "";
+		String inStr = "";
 		try {
 			if (0 < inStream.available()) {
-				byte[] inBuffer = new byte[4];
-				inStream.read(inBuffer);
-				ByteBuffer wrapped = ByteBuffer.wrap(inBuffer);
-				inInt = wrapped.getInt();
-				Log.i(TAG, "inInt: " + inInt);
+				byte[] inBuffer = new byte[1024];
+				int bytesRead = inStream.read(inBuffer);
+				inStr = new String(inBuffer, "ASCII");
+				inStr = inStr.substring(0, bytesRead);
+				Log.i(TAG, "byteCount: " + bytesRead + ", inStr: " + inStr);
 			}
 		} catch (IOException e) {
 			Log.e(TAG, "Read failed", e); 
 		}
-		return inInt;
+		return inStr;
 	}
-
-//	public String read() {
-//		if (!streaming()) return "";
-//		String inStr = "";
-//		try {
-//			if (0 < inStream.available()) {
-//				byte[] inBuffer = new byte[1024];
-//				int bytesRead = inStream.read(inBuffer);
-//				inStr = new String(inBuffer, "ASCII");
-//				inStr = inStr.substring(0, bytesRead);
-//				Log.i(TAG, "byteCount: " + bytesRead + ", inStr: " + inStr);
-//			}
-//		} catch (IOException e) {
-//			Log.e(TAG, "Read failed", e); 
-//		}
-//		return inStr;
-//	}
 
 	public void close() {
 		Log.i(TAG, "Bluetooth closing... ");

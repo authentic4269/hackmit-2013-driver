@@ -11,7 +11,7 @@ import android.widget.Toast;
 
 
 public class BluetoothActivity extends Activity {
-	TBlue tBlue;
+	TBlue tBlue = null;
 	TextView outputTv;
 
 	// Debugging
@@ -50,7 +50,9 @@ public class BluetoothActivity extends Activity {
 	@Override
 	public void onPause() {
 		super.onPause();
-		tBlue.close();
+		if (tBlue != null) {
+			tBlue.close();
+		}
 	}
 
 	public void initGUI() {
@@ -61,24 +63,24 @@ public class BluetoothActivity extends Activity {
 	}
 	
 	public void connectDevice() {
+		Log.d("yolo", "hi5");
 		tBlue = new TBlue(address);
 		if (tBlue.streaming()) {
-			outputTv.append("Connected succesfully!");
+			outputTv.append("Connected succesfully! \n");
 		} else {
-			outputTv.append("Error: Failed to connect.");
+			outputTv.append("Error: Failed to connect. \n");
 		}
 		
 		int i = 0;
-		while(tBlue.streaming() && i < 100) {
-			outputTv.append(Integer.toString(tBlue.read()));
+		while (tBlue.streaming() && (i < 50)) {
+			outputTv.append(tBlue.read() + "\n");
 			i ++;
+			try {
+				Thread.sleep(100);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
 		}
-		
-//		String s = "";
-//		while (tBlue.streaming() && (s.length() < 10) ) {
-//			s += tBlue.read();
-//		}
-//		messagesTv.append("Read from Bluetooth: \n"+s);
 	}
 	
 	public void onActivityResult(int requestCode, int resultCode, Intent data) {
