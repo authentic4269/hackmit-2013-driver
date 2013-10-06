@@ -9,7 +9,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.Set;
 
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
@@ -26,21 +25,14 @@ public class TBlue {
 	public InputStream inStream = null;
 	boolean failed = false;
 
-	public TBlue() {
+	public TBlue(String address) {
+		this.address = address.toUpperCase();
 		localAdapter = BluetoothAdapter.getDefaultAdapter(); 
 		if ((localAdapter != null) && localAdapter.isEnabled()) {
 			Log.i(TAG, "Bluetooth adapter found and enabled on phone. ");
 		} else {
 			Log.e(TAG, "Bluetooth adapter NOT FOUND or NOT ENABLED!");
 			return;
-		}
-		Set<BluetoothDevice> btSet = localAdapter.getBondedDevices();
-		if (btSet.isEmpty()) {
-			Log.e(TAG, "No paired devices!");
-			return;
-		} else {
-			// this.address = 
-			// getAddress();
 		}
 		connect(); 
 	} 
