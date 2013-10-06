@@ -18,7 +18,7 @@ package com.app.drivesafe;
 
 import java.util.Set;
 
-import com.example.safedriver.R;
+import com.app.drivesafe.R;
 
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;

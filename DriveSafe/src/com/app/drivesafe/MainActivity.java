@@ -10,7 +10,7 @@ import android.os.Bundle;
 import android.view.View;
 
 import com.androidplot.xy.*;
-import com.example.safedriver.R;
+import com.app.drivesafe.R;
 
 
 /**

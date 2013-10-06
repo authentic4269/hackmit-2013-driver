@@ -31,12 +31,14 @@ public final class R {
         public static final int ic_launcher=0x7f020000;
     }
     public static final class id {
-        public static final int action_settings=0x7f08000d;
+        public static final int action_settings=0x7f08000f;
         public static final int angularSpeedPlot=0x7f08000a;
         public static final int button_scan=0x7f080006;
         public static final int button_send=0x7f080009;
+        public static final int editText1=0x7f08000c;
+        public static final int editText2=0x7f08000d;
+        public static final int editText3=0x7f08000e;
         public static final int edit_text_out=0x7f080008;
-        public static final int email_address=0x7f08000c;
         public static final int in=0x7f080007;
         public static final int linearAccelerationPlot=0x7f08000b;
         public static final int new_devices=0x7f080005;
@@ -59,13 +61,18 @@ public final class R {
         public static final int main=0x7f070000;
     }
     public static final class string {
+        public static final int acceleration_weight=0x7f050016;
+        public static final int accuracy_threshold=0x7f050018;
         public static final int action_settings=0x7f050001;
+        public static final int angle_weight=0x7f050015;
         public static final int app_name=0x7f050000;
         public static final int bt_not_enabled_leaving=0x7f050005;
         public static final int button_scan=0x7f05000f;
         public static final int discoverable=0x7f050012;
         public static final int hello_world=0x7f050002;
+        public static final int history_size=0x7f05001a;
         public static final int insecure_connect=0x7f050011;
+        public static final int inverse_draw_frequency=0x7f050019;
         public static final int none_found=0x7f05000c;
         public static final int none_paired=0x7f05000b;
         public static final int not_connected=0x7f050004;
@@ -79,11 +86,16 @@ public final class R {
         /**   BluetoothChat 
          */
         public static final int send=0x7f050003;
+        /**  Settings Menu
+         */
+        public static final int speed_weight=0x7f050013;
+        public static final int threshold=0x7f050014;
         public static final int title_connected_to=0x7f050007;
         public static final int title_connecting=0x7f050006;
         public static final int title_not_connected=0x7f050008;
         public static final int title_other_devices=0x7f05000e;
         public static final int title_paired_devices=0x7f05000d;
+        public static final int torque_weight=0x7f050017;
     }
     public static final class style {
         /** 

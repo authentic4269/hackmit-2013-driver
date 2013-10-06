@@ -26,4 +26,14 @@
     <string name="secure_connect">Connect a device - Secure</string>
     <string name="insecure_connect">Connect a device - Insecure</string>
     <string name="discoverable">Make discoverable</string>
+    
+    <!-- Settings Menu-->
+    <string name="speed_weight">0.1</string>
+    <string name="threshold">1</string>
+    <string name="angle_weight">50</string>
+    <string name="acceleration_weight">150</string>
+    <string name="torque_weight">30</string>
+    <string name="accuracy_threshold">30</string>
+    <string name="inverse_draw_frequency">1000</string>
+    <string name="history_size">50</string>
 </resources>
