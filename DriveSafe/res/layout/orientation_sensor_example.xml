@@ -5,24 +5,64 @@
     android:layout_height="fill_parent">
  
     <com.androidplot.xy.XYPlot
-    android:id="@+id/angularSpeedPlot"
+    android:id="@+id/xRotationPlot"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
     android:layout_weight="1"
     android:layout_marginTop="10dp"
     android:layout_marginLeft="10dp"
     android:layout_marginRight="10dp"
-    title="Angular Speed"
+    title="X Rotation"
+    />
+        <com.androidplot.xy.XYPlot
+    android:id="@+id/yRotationPlot"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:layout_weight="1"
+    android:layout_marginTop="10dp"
+    android:layout_marginLeft="10dp"
+    android:layout_marginRight="10dp"
+    title="X Rotation"
+    />
+            <com.androidplot.xy.XYPlot
+    android:id="@+id/zRotationPlot"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:layout_weight="1"
+    android:layout_marginTop="10dp"
+    android:layout_marginLeft="10dp"
+    android:layout_marginRight="10dp"
+    title="Z Rotation"
     />
     <com.androidplot.xy.XYPlot
-    android:id="@+id/linearAccelerationPlot"
+    android:id="@+id/forwardAccelerationPlot"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
     android:layout_weight="1"
     android:layout_marginTop="10dp"
     android:layout_marginLeft="10dp"
     android:layout_marginRight="10dp"
-    title="Linear Acceleration"
+    title="Forward Acceleration"
+    />
+        <com.androidplot.xy.XYPlot
+    android:id="@+id/upwardAccelerationPlot"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:layout_weight="1"
+    android:layout_marginTop="10dp"
+    android:layout_marginLeft="10dp"
+    android:layout_marginRight="10dp"
+    title="Upward Acceleration"
+    />
+            <com.androidplot.xy.XYPlot
+    android:id="@+id/sidewaysAccelerationPlot"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:layout_weight="1"
+    android:layout_marginTop="10dp"
+    android:layout_marginLeft="10dp"
+    android:layout_marginRight="10dp"
+    title="Sideways Acceleration"
     />
  
 
